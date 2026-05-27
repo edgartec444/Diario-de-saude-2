@@ -1,29 +1,69 @@
 import { useState, useEffect } from 'react'
 
-const META = 5
+const META = 4
+
+const refeicoesPadrao = [
+  { id: 'cafe', nome: 'Café da manhã', feito: false },
+  { id: 'almoco', nome: 'Almoço', feito: false },
+  { id: 'lanche', nome: 'Lanche', feito: false },
+  { id: 'jantar', nome: 'Jantar', feito: false },
+]
 
 export default function MealsTracker() {
-  const [n, setN] = useState(0)
-  const hoje = new Date().toISOString().slice(0,10)
+  const hoje = new Date().toISOString().slice(0, 10)
+  const [refeicoes, setRefeicoes] = useState(refeicoesPadrao)
 
   useEffect(() => {
     const v = localStorage.getItem(`refeicoes_${hoje}`)
-    if (v) setN(+v)
+    if (v) setRefeicoes(JSON.parse(v))
   }, [hoje])
 
   useEffect(() => {
-    localStorage.setItem(`refeicoes_${hoje}`, n)
-  }, [n, hoje])
+    localStorage.setItem(`refeicoes_${hoje}`, JSON.stringify(refeicoes))
+  }, [refeicoes, hoje])
+
+  function alternarRefeicao(id) {
+    setRefeicoes(prev =>
+      prev.map(refeicao =>
+        refeicao.id === id ? { ...refeicao, feito: !refeicao.feito } : refeicao
+      )
+    )
+  }
+
+  function resetar() {
+    setRefeicoes(refeicoesPadrao)
+  }
+
+  const n = refeicoes.filter(r => r.feito).length
+  const pct = Math.round((n / META) * 100)
 
   return (
-    <div style={{marginBottom:20}}>
-      <h2>Refeições🍽️</h2>
-      <p>{n} / {META} refeições</p>
-      <div style={{marginTop:10,gap:8,display:'flex'}}>
-        <button onClick={()=>setN(n=>Math.min(META,n+1))}>+1</button>
-        <button onClick={()=>setN(n=>Math.max(0,n-1))}>-1</button>
-        <button onClick={()=>setN(0)}>Reset</button>
+    <section className="tracker-card meals-card">
+      <h2>Refeições</h2>
+      <p className="tracker-subtitle">{n} / {META} refeições concluídas</p>
+
+      <div className="meal-list">
+        {refeicoes.map(refeicao => (
+          <button
+            key={refeicao.id}
+            className={`meal-item ${refeicao.feito ? 'done' : ''}`}
+            onClick={() => alternarRefeicao(refeicao.id)}
+          >
+            <span>{refeicao.nome}</span>
+            <strong>{refeicao.feito ? 'Feito' : 'Pendente'}</strong>
+          </button>
+        ))}
       </div>
-    </div>
+
+      <div className="progress-bar">
+        <div className="progress-fill meal-fill" style={{ width: `${pct}%` }}>
+          {pct}%
+        </div>
+      </div>
+
+      <div className="button-row">
+        <button onClick={resetar} className="secondary">Resetar</button>
+      </div>
+    </section>
   )
 }

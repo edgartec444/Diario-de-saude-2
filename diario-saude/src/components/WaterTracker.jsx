@@ -4,7 +4,7 @@ const META = 2000
 
 export default function WaterTracker() {
   const [agua, setAgua] = useState(0)
-  const hoje = new Date().toISOString().slice(0,10)
+  const hoje = new Date().toISOString().slice(0, 10)
 
   useEffect(() => {
     const v = localStorage.getItem(`agua_${hoje}`)
@@ -16,22 +16,31 @@ export default function WaterTracker() {
   }, [agua, hoje])
 
   const pct = Math.min(100, Math.round((agua / META) * 100))
-  const cor = pct < 50 ? '#1e88e5' : pct < 100 ? '#43a047' : '#f57f17'
+  const metaBatida = agua >= META
 
   return (
-    <div style={{marginBottom:20}}>
-      <h2>Água🫗</h2>
-      <p>{agua} / {META} ml</p>
-      <div style={{background:'#e6eef6',height:28,borderRadius:12,overflow:'hidden'}}>
-        <div style={{width:`${pct}%`,height:'100%',background:cor,transition:'width .3s',display:'flex',alignItems:'center',justifyContent:'center',color:'#fff',fontWeight:700}}>
+    <section className="tracker-card water-card">
+      <h2>Água</h2>
+      <p className="tracker-subtitle">{agua} / {META} ml</p>
+
+      <div className="progress-bar">
+        <div
+          className="progress-fill"
+          style={{ width: `${pct}%` }}
+        >
           {pct}%
         </div>
       </div>
-      <div style={{marginTop:10,gap:8,display:'flex'}}>
-        <button onClick={()=>setAgua(a=>a+250)}>+250</button>
-        <button onClick={()=>setAgua(a=>a+500)}>+500</button>
-        <button onClick={()=>setAgua(0)}>Reset</button>
+
+      <p className={`goal-status ${metaBatida ? 'done' : ''}`}>
+        {metaBatida ? 'Meta batida! Excelente hidratação.' : 'Ainda falta para bater a meta de hoje.'}
+      </p>
+
+      <div className="button-row">
+        <button onClick={() => setAgua(a => a + 250)}>+250 ml</button>
+        <button onClick={() => setAgua(a => a + 500)}>+500 ml</button>
+        <button onClick={() => setAgua(0)} className="secondary">Resetar</button>
       </div>
-    </div>
+    </section>
   )
 }
