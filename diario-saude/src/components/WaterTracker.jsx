@@ -1,54 +1,35 @@
-import { useState, useEffect } from 'react'
-
+import { useEffect, useState } from 'react'
 
 const META = 2000
-
+const STORAGE_KEY = 'agua_hoje'
 
 export default function WaterTracker() {
   const [agua, setAgua] = useState(0)
-  const hoje = new Date().toISOString().slice(0, 10)
-
 
   useEffect(() => {
-    const v = localStorage.getItem(`agua_${hoje}`)
-    if (v) setAgua(+v)
-  }, [hoje])
-
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) setAgua(Number(saved))
+  }, [])
 
   useEffect(() => {
-    localStorage.setItem(`agua_${hoje}`, agua)
-  }, [agua, hoje])
-
+    localStorage.setItem(STORAGE_KEY, String(agua))
+  }, [agua])
 
   const pct = Math.min(100, Math.round((agua / META) * 100))
-  const metaBatida = agua >= META
-
 
   return (
-    <section className="tracker-card water-card">
-      <h2>Água</h2>
-      <p className="tracker-subtitle">{agua} / {META} ml</p>
-
+    <section className="tracker-card">
+      <h3>Água</h3>
+      <p>{agua}ml / {META}ml</p>
 
       <div className="progress-bar">
-        <div
-          className="progress-fill"
-          style={{ width: `${pct}%` }}
-        >
-          {pct}%
-        </div>
+        <div className="progress-fill" style={{ width: `${pct}%` }} />
       </div>
 
-
-      <p className={`goal-status ${metaBatida ? 'done' : ''}`}>
-        {metaBatida ? 'Meta batida! Excelente hidratação.' : 'Ainda falta para bater a meta de hoje.'}
-      </p>
-
-
-      <div className="button-row">
-        <button onClick={() => setAgua(a => a + 250)}>+250 ml</button>
-        <button onClick={() => setAgua(a => a + 500)}>+500 ml</button>
-        <button onClick={() => setAgua(0)} className="secondary">Resetar</button>
+      <div className="tracker-actions">
+        <button onClick={() => setAgua((v) => Math.min(META, v + 250))}>+250ml</button>
+        <button onClick={() => setAgua((v) => Math.min(META, v + 500))}>+500ml</button>
+        <button onClick={() => setAgua(0)}>Resetar</button>
       </div>
     </section>
   )

@@ -1,80 +1,34 @@
-import { useState, useEffect } from 'react'
-
+import { useEffect, useState } from 'react'
 
 const META = 4
-
-
-const refeicoesPadrao = [
-  { id: 'cafe', nome: 'Café da manhã', feito: false },
-  { id: 'almoco', nome: 'Almoço', feito: false },
-  { id: 'lanche', nome: 'Lanche', feito: false },
-  { id: 'jantar', nome: 'Jantar', feito: false },
-]
-
+const STORAGE_KEY = 'refeicoes_hoje'
 
 export default function MealsTracker() {
-  const hoje = new Date().toISOString().slice(0, 10)
-  const [refeicoes, setRefeicoes] = useState(refeicoesPadrao)
-
+  const [refeicoes, setRefeicoes] = useState(0)
 
   useEffect(() => {
-    const v = localStorage.getItem(`refeicoes_${hoje}`)
-    if (v) setRefeicoes(JSON.parse(v))
-  }, [hoje])
-
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) setRefeicoes(Number(saved))
+  }, [])
 
   useEffect(() => {
-    localStorage.setItem(`refeicoes_${hoje}`, JSON.stringify(refeicoes))
-  }, [refeicoes, hoje])
+    localStorage.setItem(STORAGE_KEY, String(refeicoes))
+  }, [refeicoes])
 
-
-  function alternarRefeicao(id) {
-    setRefeicoes(prev =>
-      prev.map(refeicao =>
-        refeicao.id === id ? { ...refeicao, feito: !refeicao.feito } : refeicao
-      )
-    )
-  }
-
-
-  function resetar() {
-    setRefeicoes(refeicoesPadrao)
-  }
-
-
-  const n = refeicoes.filter(r => r.feito).length
-  const pct = Math.round((n / META) * 100)
-
+  const pct = Math.min(100, Math.round((refeicoes / META) * 100))
 
   return (
-    <section className="tracker-card meals-card">
-      <h2>Refeições</h2>
-      <p className="tracker-subtitle">{n} / {META} refeições concluídas</p>
-
-
-      <div className="meal-list">
-        {refeicoes.map(refeicao => (
-          <button
-            key={refeicao.id}
-            className={`meal-item ${refeicao.feito ? 'done' : ''}`}
-            onClick={() => alternarRefeicao(refeicao.id)}
-          >
-            <span>{refeicao.nome}</span>
-            <strong>{refeicao.feito ? 'Feito' : 'Pendente'}</strong>
-          </button>
-        ))}
-      </div>
-
+    <section className="tracker-card">
+      <h3>Refeições</h3>
+      <p>{refeicoes} / {META}</p>
 
       <div className="progress-bar">
-        <div className="progress-fill meal-fill" style={{ width: `${pct}%` }}>
-          {pct}%
-        </div>
+        <div className="progress-fill" style={{ width: `${pct}%` }} />
       </div>
 
-
-      <div className="button-row">
-        <button onClick={resetar} className="secondary">Resetar</button>
+      <div className="tracker-actions">
+        <button onClick={() => setRefeicoes((v) => Math.min(META, v + 1))}>+1 refeição</button>
+        <button onClick={() => setRefeicoes(0)}>Resetar</button>
       </div>
     </section>
   )
