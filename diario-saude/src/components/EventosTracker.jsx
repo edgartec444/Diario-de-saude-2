@@ -11,7 +11,7 @@ const locales = {
 const localizer = dateFnsLocalizer({
   format,
   parse,
-  startOfWeek,
+  startOfWeek: () => startOfWeek(new Date(), { locale: ptBR }),
   getDay,
   locales,
 })
@@ -23,6 +23,22 @@ const tipos = {
   alerta: '#ef4444',
   meta: '#7c3aed',
   lembrete: '#f59e0b',
+}
+
+const ptMessages = {
+  allDay: 'Todo o dia',
+  previous: 'Anterior',
+  next: 'Proximo',
+  today: 'Hoje',
+  month: 'Mes',
+  week: 'Semana',
+  day: 'Dia',
+  agenda: 'Agenda',
+  date: 'Data',
+  time: 'Hora',
+  event: 'Evento',
+  noEventsInRange: 'Nao ha eventos neste periodo.',
+  showMore: (total) => 'Ver mais (' + total + ')'
 }
 
 export default function EventosTracker() {
@@ -57,6 +73,8 @@ export default function EventosTracker() {
           borderRadius: '10px',
           border: 'none',
           color: '#fff',
+          fontSize: '14px',
+          padding: '4px 8px',
         },
       })),
     [eventos]
@@ -69,7 +87,9 @@ export default function EventosTracker() {
   function salvarEvento() {
     if (!selectedSlot || !titulo.trim()) return
 
-    const [hh, mm] = hora.split(':').map(Number)
+    const hhmm = hora.split(':').map(Number)
+    const hh = hhmm[0]
+    const mm = hhmm[1]
     const start = new Date(selectedSlot)
     start.setHours(hh, mm, 0, 0)
 
@@ -94,6 +114,16 @@ export default function EventosTracker() {
     setSelectedSlot(null)
   }
 
+  function removerEvento(index) {
+    setEventos((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const hoje = new Date()
+
+  const eventosHoje = eventos.filter((ev) => 
+    ev.start.toDateString() === hoje.toDateString()
+  )
+
   return (
     <div className="events-wrap">
       <div className="events-panel">
@@ -101,7 +131,7 @@ export default function EventosTracker() {
           <h3>Novo evento</h3>
 
           <p className="events-hint">
-            Clique em uma data no calendário para escolher o dia.
+            Clique em uma data no calendario para escolher o dia.
           </p>
 
           <input
@@ -123,7 +153,9 @@ export default function EventosTracker() {
             <option value="lembrete">Lembrete</option>
           </select>
 
-          <button onClick={salvarEvento}>Adicionar evento</button>
+          <button onClick={salvarEvento} disabled={!selectedSlot || !titulo.trim()}>
+            Adicionar evento
+          </button>
 
           {selectedSlot && (
             <p className="events-selected">
@@ -136,17 +168,24 @@ export default function EventosTracker() {
           <h3>Eventos do dia</h3>
           {eventos.length === 0 ? (
             <p className="events-empty">Nenhum evento salvo ainda.</p>
+          ) : eventosHoje.length === 0 ? (
+            <p className="events-empty">Nenhum evento para hoje.</p>
           ) : (
-            eventos.map((ev, index) => (
+            eventosHoje.map((ev, index) => (
               <div key={index} className="event-item" style={{ borderLeftColor: ev.color }}>
                 <strong>{ev.title}</strong>
                 <span>
-                  {ev.start.toLocaleDateString('pt-BR')} às{' '}
                   {ev.start.toLocaleTimeString('pt-BR', {
                     hour: '2-digit',
                     minute: '2-digit',
                   })}
                 </span>
+                <button
+                  className="event-delete-btn"
+                  onClick={() => removerEvento(eventos.indexOf(ev))}
+                >
+                  x
+                </button>
               </div>
             ))
           )}
@@ -164,13 +203,32 @@ export default function EventosTracker() {
           defaultView="month"
           views={['month', 'week', 'day', 'agenda']}
           style={{ height: 650 }}
+          locale="pt-BR"
+          messages={ptMessages}
           eventPropGetter={(event) => ({
             style: {
               backgroundColor: event.color,
               borderRadius: '10px',
               border: 'none',
               color: '#fff',
+              fontSize: '14px',
+              padding: '4px 8px',
+              cursor: 'pointer',
             },
+          })}
+          dayPropGetter={(date) => ({
+            style: {
+              backgroundColor: date.toDateString() === new Date().toDateString()
+                ? 'rgba(34, 197, 94, 0.1)'
+                : 'transparent',
+              color: '#e7f5ee',
+            }
+          })}
+          slotPropGetter={() => ({
+            style: {
+              backgroundColor: 'transparent',
+              color: '#e7f5ee',
+            }
           })}
         />
       </div>
