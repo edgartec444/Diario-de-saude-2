@@ -4,12 +4,11 @@ const META = 4
 const STORAGE_KEY = 'refeicoes_hoje'
 
 export default function MealsTracker() {
-  const [refeicoes, setRefeicoes] = useState(0)
-
-  useEffect(() => {
+  const [refeicoes, setRefeicoes] = useState(() => {
+    if (typeof window === 'undefined') return 0
     const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) setRefeicoes(Number(saved))
-  }, [])
+    return saved ? Number(saved) : 0
+  })
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, String(refeicoes))
@@ -20,14 +19,18 @@ export default function MealsTracker() {
   return (
     <section className="tracker-card">
       <h3>Refeições</h3>
-      <p>{refeicoes} / {META}</p>
+      <p>
+        {refeicoes} / {META}
+      </p>
 
       <div className="progress-bar">
         <div className="progress-fill" style={{ width: `${pct}%` }} />
       </div>
 
       <div className="tracker-actions">
-        <button onClick={() => setRefeicoes((v) => Math.min(META, v + 1))}>+1 refeição</button>
+        <button onClick={() => setRefeicoes((v) => Math.min(META, v + 1))}>
+          +1 refeição
+        </button>
         <button onClick={() => setRefeicoes(0)}>Resetar</button>
       </div>
     </section>

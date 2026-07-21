@@ -40,7 +40,7 @@ const defaultMeal = {
 
 function getMealData(text) {
   const value = text.toLowerCase()
-  let result = { ...defaultMeal }
+  const result = { ...defaultMeal }
 
   foodMap.forEach((item) => {
     if (item.keys.some((key) => value.includes(key))) {
@@ -79,19 +79,29 @@ export default function FoodNutritionChart() {
   const score = useMemo(() => getScore(nutrition), [nutrition])
   const label = useMemo(() => getLabel(score), [score])
 
-  const bars = [
-    { name: 'Score', value: score, fill: score >= 80 ? theme.green : score >= 55 ? theme.yellow : theme.red },
-    { name: 'Proteína', value: Math.min(100, nutrition.protein * 3), fill: theme.greenSoft },
-    { name: 'Açúcar', value: Math.min(100, nutrition.sugar * 3), fill: theme.red },
-    { name: 'Gordura', value: Math.min(100, nutrition.fat * 2), fill: theme.yellow },
-  ]
+  const bars = useMemo(
+    () => [
+      {
+        name: 'Score',
+        value: score,
+        fill: score >= 80 ? theme.green : score >= 55 ? theme.yellow : theme.red,
+      },
+      { name: 'Proteína', value: Math.min(100, nutrition.protein * 3), fill: theme.greenSoft },
+      { name: 'Açúcar', value: Math.min(100, nutrition.sugar * 3), fill: theme.red },
+      { name: 'Gordura', value: Math.min(100, nutrition.fat * 2), fill: theme.yellow },
+    ],
+    [score, nutrition]
+  )
 
-  const pieData = [
-    { name: 'Carboidrato', value: nutrition.carb },
-    { name: 'Açúcar', value: nutrition.sugar },
-    { name: 'Gordura', value: nutrition.fat },
-    { name: 'Proteína', value: nutrition.protein },
-  ]
+  const pieData = useMemo(
+    () => [
+      { name: 'Carboidrato', value: nutrition.carb },
+      { name: 'Açúcar', value: nutrition.sugar },
+      { name: 'Gordura', value: nutrition.fat },
+      { name: 'Proteína', value: nutrition.protein },
+    ],
+    [nutrition]
+  )
 
   const pieColors = [theme.green, theme.red, theme.yellow, theme.greenSoft]
 

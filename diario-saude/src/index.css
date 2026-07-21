@@ -369,3 +369,210 @@
   color: #00ff88 !important;
   font-weight: 600;
 }
+
+:root {
+  --holo-cyan: #45e8d1;
+  --holo-cyan-dim: #1f8f82;
+  --holo-violet: #8b7bf5;
+  --holo-wire: rgba(69, 232, 209, 0.22);
+  --holo-amber: #f2b84b;
+  --holo-depth-1: rgba(69, 232, 209, 0.06);
+  --holo-depth-2: rgba(139, 123, 245, 0.05);
+}
+
+.hologram-wrap {
+  position: relative;
+  max-width: 320px;
+  margin: 0 auto;
+  padding: 2rem 0 1rem;
+  perspective: 900px;
+}
+
+.hologram-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+  overflow: visible;
+  transform: rotateX(4deg);
+  transform-style: preserve-3d;
+  filter: drop-shadow(0 24px 32px rgba(0, 0, 0, 0.55));
+}
+
+/* --- corpo wireframe (contorno sempre visível) --- */
+.holo-wireframe path {
+  fill: none;
+  stroke: var(--holo-wire);
+  stroke-width: 1;
+}
+
+/* --- corpo materializado / zonas interativas --- */
+.holo-zone {
+  fill: color-mix(in srgb, var(--zone-fill) 20%, transparent);
+  stroke: var(--zone-fill);
+  stroke-width: 1.4;
+  cursor: pointer;
+  transition: fill 0.25s ease, filter 0.25s ease, transform 0.25s ease;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+.holo-zone:hover,
+.holo-zone:focus-visible {
+  fill: color-mix(in srgb, var(--zone-fill) 42%, transparent);
+  filter:
+    drop-shadow(0 0 4px var(--zone-fill))
+    drop-shadow(0 0 12px var(--zone-fill));
+  transform: scale(1.015) translateZ(6px);
+  outline: none;
+}
+
+.holo-zone--active {
+  fill: color-mix(in srgb, var(--zone-fill) 58%, transparent);
+  filter:
+    drop-shadow(0 0 6px var(--zone-fill))
+    drop-shadow(0 0 18px var(--zone-fill))
+    drop-shadow(0 0 30px var(--zone-fill));
+  transform: translateZ(10px);
+}
+
+/* --- base emissora (disco com anéis 3D) --- */
+.holo-ring {
+  fill: none;
+  stroke: var(--holo-cyan);
+  stroke-width: 1;
+  opacity: 0.5;
+}
+
+.holo-ring--inner {
+  opacity: 0.3;
+}
+
+.holo-sweep {
+  transform-origin: 160px 345px;
+  animation: holoRotate 6s linear infinite;
+}
+
+.holo-sweep-fill {
+  fill: var(--holo-cyan);
+  opacity: 0.15;
+}
+
+/* --- varredura de scan vertical --- */
+.holo-scanline {
+  fill: var(--holo-cyan);
+  opacity: 0.14;
+  filter: drop-shadow(0 0 8px var(--holo-cyan));
+  animation: holoScan 3.2s ease-in-out infinite;
+}
+
+/* --- flicker sutil no corpo materializado --- */
+.holo-solid {
+  animation: holoFlicker 4.5s infinite ease-in-out;
+}
+
+@keyframes holoScan {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(320px); }
+}
+
+@keyframes holoRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes holoFlicker {
+  0%, 92%, 100% { opacity: 1; }
+  93% { opacity: 0.78; }
+  94% { opacity: 1; }
+  96% { opacity: 0.88; }
+}
+
+/* --- status abaixo do holograma --- */
+.hologram-status {
+  text-align: center;
+  font-family: monospace;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  margin-top: 10px;
+  color: var(--holo-cyan);
+  text-shadow: 0 0 8px var(--holo-cyan);
+}
+
+/* --- painel holográfico (abre ao clicar em uma zona) --- */
+.holo-panel {
+  position: absolute;
+  left: calc(100% + 14px);
+  width: 168px;
+  background:
+    linear-gradient(160deg, var(--holo-depth-1), var(--holo-depth-2)),
+    rgba(10, 20, 18, 0.82);
+  border: 1px solid var(--holo-wire);
+  border-radius: 10px;
+  padding: 12px 14px;
+  font-family: monospace;
+  color: var(--holo-cyan);
+  backdrop-filter: blur(6px);
+  box-shadow:
+    0 0 0 1px rgba(69, 232, 209, 0.08) inset,
+    0 12px 24px rgba(0, 0, 0, 0.45),
+    0 0 20px rgba(69, 232, 209, 0.12);
+  animation: holoPanelIn 0.22s ease;
+}
+
+.holo-panel__head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  color: rgba(230, 250, 245, 0.65);
+  margin-bottom: 6px;
+  border-bottom: 1px solid var(--holo-wire);
+  padding-bottom: 6px;
+}
+
+.holo-panel__head button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.holo-panel__value {
+  font-size: 24px;
+  font-weight: 600;
+  margin: 4px 0;
+  text-shadow: 0 0 10px currentColor;
+}
+
+.holo-panel__detail {
+  font-size: 11px;
+  color: rgba(230, 250, 245, 0.6);
+  margin: 0;
+  line-height: 1.4;
+}
+
+@keyframes holoPanelIn {
+  from { opacity: 0; transform: translateX(-8px) translateZ(0); }
+  to { opacity: 1; transform: translateX(0) translateZ(0); }
+}
+
+@media (max-width: 480px) {
+  .holo-panel {
+    left: 0;
+    top: auto !important;
+    bottom: -8px;
+    width: calc(100% - 28px);
+    transform: translateY(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .holo-solid,
+  .holo-sweep,
+  .holo-scanline,
+  .holo-zone {
+    animation: none;
+    transition: none;
+  }
+}

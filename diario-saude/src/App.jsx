@@ -5,6 +5,7 @@ import EventosTracker from './components/EventosTracker'
 import CircularDashboard from './components/CircularDashboard'
 import FoodNutritionChart from './components/FoodNutritionChart'
 import Avancos from './components/Avancos'
+import HologramBody from './components/HologramBody'
 import './index.css'
 
 export default function App() {

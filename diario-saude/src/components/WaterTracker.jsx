@@ -4,12 +4,11 @@ const META = 2000
 const STORAGE_KEY = 'agua_hoje'
 
 export default function WaterTracker() {
-  const [agua, setAgua] = useState(0)
-
-  useEffect(() => {
+  const [agua, setAgua] = useState(() => {
+    if (typeof window === 'undefined') return 0
     const saved = localStorage.getItem(STORAGE_KEY)
-    if (saved) setAgua(Number(saved))
-  }, [])
+    return saved ? Number(saved) : 0
+  })
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, String(agua))
@@ -20,15 +19,21 @@ export default function WaterTracker() {
   return (
     <section className="tracker-card">
       <h3>Água</h3>
-      <p>{agua}ml / {META}ml</p>
+      <p>
+        {agua}ml / {META}ml
+      </p>
 
       <div className="progress-bar">
         <div className="progress-fill" style={{ width: `${pct}%` }} />
       </div>
 
       <div className="tracker-actions">
-        <button onClick={() => setAgua((v) => Math.min(META, v + 250))}>+250ml</button>
-        <button onClick={() => setAgua((v) => Math.min(META, v + 500))}>+500ml</button>
+        <button onClick={() => setAgua((v) => Math.min(META, v + 250))}>
+          +250ml
+        </button>
+        <button onClick={() => setAgua((v) => Math.min(META, v + 500))}>
+          +500ml
+        </button>
         <button onClick={() => setAgua(0)}>Resetar</button>
       </div>
     </section>

@@ -28,17 +28,17 @@ const tipos = {
 const ptMessages = {
   allDay: 'Todo o dia',
   previous: 'Anterior',
-  next: 'Proximo',
+  next: 'Próximo',
   today: 'Hoje',
-  month: 'Mes',
+  month: 'Mês',
   week: 'Semana',
   day: 'Dia',
   agenda: 'Agenda',
   date: 'Data',
   time: 'Hora',
   event: 'Evento',
-  noEventsInRange: 'Nao ha eventos neste periodo.',
-  showMore: (total) => 'Ver mais (' + total + ')'
+  noEventsInRange: 'Não há eventos neste período.',
+  showMore: (total) => `Ver mais (${total})`,
 }
 
 export default function EventosTracker() {
@@ -53,6 +53,7 @@ export default function EventosTracker() {
     if (saved) {
       const parsed = JSON.parse(saved).map((item) => ({
         ...item,
+        id: item.id || crypto.randomUUID(),
         start: new Date(item.start),
         end: new Date(item.end),
       }))
@@ -64,22 +65,6 @@ export default function EventosTracker() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(eventos))
   }, [eventos])
 
-  const eventsStyled = useMemo(
-    () =>
-      eventos.map((ev) => ({
-        ...ev,
-        style: {
-          backgroundColor: ev.color,
-          borderRadius: '10px',
-          border: 'none',
-          color: '#fff',
-          fontSize: '14px',
-          padding: '4px 8px',
-        },
-      })),
-    [eventos]
-  )
-
   function onSelectSlot(slotInfo) {
     setSelectedSlot(slotInfo.start)
   }
@@ -87,9 +72,7 @@ export default function EventosTracker() {
   function salvarEvento() {
     if (!selectedSlot || !titulo.trim()) return
 
-    const hhmm = hora.split(':').map(Number)
-    const hh = hhmm[0]
-    const mm = hhmm[1]
+    const [hh, mm] = hora.split(':').map(Number)
     const start = new Date(selectedSlot)
     start.setHours(hh, mm, 0, 0)
 
@@ -101,10 +84,12 @@ export default function EventosTracker() {
     setEventos((prev) => [
       ...prev,
       {
+        id: crypto.randomUUID(),
         title: titulo.trim(),
         start,
         end,
         color,
+        tipo,
       },
     ])
 
@@ -114,14 +99,15 @@ export default function EventosTracker() {
     setSelectedSlot(null)
   }
 
-  function removerEvento(index) {
-    setEventos((prev) => prev.filter((_, i) => i !== index))
+  function removerEvento(id) {
+    setEventos((prev) => prev.filter((ev) => ev.id !== id))
   }
 
   const hoje = new Date()
 
-  const eventosHoje = eventos.filter((ev) => 
-    ev.start.toDateString() === hoje.toDateString()
+  const eventosHoje = useMemo(
+    () => eventos.filter((ev) => ev.start.toDateString() === hoje.toDateString()),
+    [eventos]
   )
 
   return (
@@ -131,7 +117,7 @@ export default function EventosTracker() {
           <h3>Novo evento</h3>
 
           <p className="events-hint">
-            Clique em uma data no calendario para escolher o dia.
+            Clique em uma data no calendário para escolher o dia.
           </p>
 
           <input
@@ -171,8 +157,12 @@ export default function EventosTracker() {
           ) : eventosHoje.length === 0 ? (
             <p className="events-empty">Nenhum evento para hoje.</p>
           ) : (
-            eventosHoje.map((ev, index) => (
-              <div key={index} className="event-item" style={{ borderLeftColor: ev.color }}>
+            eventosHoje.map((ev) => (
+              <div
+                key={ev.id}
+                className="event-item"
+                style={{ borderLeftColor: ev.color }}
+              >
                 <strong>{ev.title}</strong>
                 <span>
                   {ev.start.toLocaleTimeString('pt-BR', {
@@ -182,7 +172,7 @@ export default function EventosTracker() {
                 </span>
                 <button
                   className="event-delete-btn"
-                  onClick={() => removerEvento(eventos.indexOf(ev))}
+                  onClick={() => removerEvento(ev.id)}
                 >
                   x
                 </button>
@@ -195,7 +185,7 @@ export default function EventosTracker() {
       <div className="calendar-box">
         <Calendar
           localizer={localizer}
-          events={eventsStyled}
+          events={eventos}
           startAccessor="start"
           endAccessor="end"
           selectable
@@ -218,17 +208,18 @@ export default function EventosTracker() {
           })}
           dayPropGetter={(date) => ({
             style: {
-              backgroundColor: date.toDateString() === new Date().toDateString()
-                ? 'rgba(34, 197, 94, 0.1)'
-                : 'transparent',
+              backgroundColor:
+                date.toDateString() === new Date().toDateString()
+                  ? 'rgba(34, 197, 94, 0.1)'
+                  : 'transparent',
               color: '#e7f5ee',
-            }
+            },
           })}
           slotPropGetter={() => ({
             style: {
               backgroundColor: 'transparent',
               color: '#e7f5ee',
-            }
+            },
           })}
         />
       </div>
